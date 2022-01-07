@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Demo page</title>
+    <style>
+      #wrapper {
+        display: flex;
+        align-items: center;
+        width: 50vw;
+        margin: 2em 0 0 0;
+      }
+      #wrapper img {
+        display: block;
+        width: 50%;
+        margin: 0 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="file" id="file_input" />
+    <div id="wrapper">
+      <img
+        id="input"
+        src="https://via.placeholder.com/600x600?text=Your+image"
+        alt="input image"
+      />
+      <img
+        id="output"
+        src="https://via.placeholder.com/600x600?text=Result+image"
+        alt="output_image"
+      />
+    </div>
+    <script>
+      document
+        .getElementById("file_input")
+        .addEventListener("change", async function () {
+          const reader = new FileReader();
+          const images = this.files;
+          //if(!/^image\/(jpeg|png|jfif)$/.test(images[0].type)){return;}
+          if (!/\.(jpe?g|png|jfif)$/.test(images[0].name)) {
+            return;
+          }
+          const formData = new FormData();
+          formData.append("image", images[0]);
+          reader.onload = async function () {
+            const res = reader.result;
+            display_image(res, document.getElementById("input"));
+          };
+          reader.readAsArrayBuffer(images[0]);
+          document.getElementById("output").src = "src/spinner.gif";
+          const profit = await send(formData, "/image");
+          display_image(profit, document.getElementById("output"));
+        });
+      async function send(data, url) {
+        const response = await fetch(url, {
+          method: "POST",
+          body: data,
+        });
+        const result = await response.json();
+        return result;
+      }
+      function display_image(data, el) {
+        const typed_arr = new Uint8Array(data);
+        const blob = new Blob([typed_arr], { type: "image/jpeg" });
+        const url = window.URL.createObjectURL(blob);
+        el.src = url;
+      }
+    </script>
+  </body>
+</html>
