@@ -21,7 +21,8 @@ app.post(
   multer({ storage: upload }).single("image"),
   function (req, res) {
     const py = cp.spawn("python", [
-      "./python/main.py",
+      //"./python/main.py",
+      "./python/main_face_n_hands.py",
       req.file.filename /*, Buffer.from(req.file.buffer, 'base64')*/,
     ]);
     //py.stdin.write(Buffer.from(JSON.stringify(req.file.buffer)))
@@ -45,11 +46,13 @@ app.post(
       fs.unlink(path.join(folder, req.file.filename));
     });
     py.stderr.on("data", function (data) {
-      console.log("\x1b[31m", data.toString());
+      const msg = data.toString()
+      console.log("\x1b[31m", msg);
+      if(/^info:/i.test(msg)){return;} //костыль
       if (sent) {
         return;
       }
-      res.send({ data: data.toString() });
+      res.send({ data: msg });
       sent = true;
     });
   }
