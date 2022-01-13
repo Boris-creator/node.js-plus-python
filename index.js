@@ -44,6 +44,7 @@ app.post(
     });
     py.stdout.on("end", function () {
       fs.unlink(path.join(folder, req.file.filename));
+      py.kill()
     });
     py.stderr.on("data", function (data) {
       const msg = data.toString()
